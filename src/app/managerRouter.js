@@ -4,10 +4,14 @@ const path = require("path");
 
 const router = express.Router();
 
-// Obtener las rutas de la carpeta "routes"
+
+const home = require("./routes/Home");
+router.use("/", home);
+
+/* // Obtener las rutas de la carpeta "routes"
 const rutasPath = path.join(__dirname, "./routes/");
 
-/* // Leer los archivos de la carpeta "routes"
+// Leer los archivos de la carpeta "routes"
 fs.readdirSync(rutasPath).forEach((file) => {
   // Obtener la ruta completa del archivo
   const filePath = path.join(rutasPath, file);
