@@ -1,8 +1,9 @@
-doctype html
-html
-  head
-    title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
-  body
-      h1= title
-      p Welcome to #{title}
+extends layout.pug
+block link
+block titulo
+	title inicio
+block contenido
+	div
+		p los usuarios de la base de datos son :
+
+

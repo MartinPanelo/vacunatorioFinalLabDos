@@ -1,8 +1,20 @@
 const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+
+// Configuración de body-parser
+app.use(bodyParser.json()); // Para analizar solicitudes con formato JSON
+app.use(bodyParser.urlencoded({ extended: true })); // Para analizar solicitudes con datos de formulario
+
+
+app.use(cookieParser());
+
+
 const path = require('path');
 const morgan = require('morgan')
 
-const app = express();
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -17,6 +29,8 @@ app.use(morgan('combined'))
 // routes
 var managerRutas = require("./managerRouter");
 app.use("/", managerRutas);
+
+
 
 //test conexion sacar de aca <====
 const conexion = require("./conexion");

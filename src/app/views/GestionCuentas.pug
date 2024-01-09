@@ -1,0 +1,35 @@
+extends layout.pug
+block link
+block titulo
+	title Gestion
+block contenido
+	div.m-4
+		p.text-center Gestion de Cuentas
+			table.table.table-striped
+				thead
+					tr
+						th Nombre
+						th Apellido
+						th Email
+						th Rol
+				tbody
+					each user in usuarios
+						tr
+							td= user.nombre
+							td= user.apellido
+							td= user.correo
+							if usuariorol !== "admin"
+								td=user.rol
+							else if user.rol === null
+								td="Sin rol"					
+							else
+								td
+									form.d-flex.justify-content-around(action="CambiarRol" method="POST", onsubmit="return true")
+										input(type="hidden" name="userId" value=user.id)
+										select.form-select.w-50(name="RolNuevo")
+											option(value="Sin rol" selected=(user.rol === null)) Sin rol
+											option(value="admin" selected=(user.rol === 'admin')) Administrador
+											option(value="usuario" selected=(user.rol === 'usuario')) Usuario
+										button.btn.btn-primary(type="submit") Actualizar
+
+

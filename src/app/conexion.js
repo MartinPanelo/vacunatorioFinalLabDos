@@ -1,17 +1,22 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize,DataTypes } = require("sequelize");
 
-const connection = new Sequelize("vacunatorio", "root", "", {
+const sequelize = new Sequelize("vacunatorio", "root", "", {
   host: "localhost",
   dialect: "mysql",
 });
-connection
-  .authenticate()
-  .then(() => {
 
+sequelize.authenticate()
+  .then(() => {
     console.log("Connection to DB was successful");
   })
   .catch((err) => {
     console.error("Unable to connect to DB", err);
   });
 
-module.exports = connection;
+module.exports = {sequelize, DataTypes};
+
+
+    
+/*  const UsuarioModel  = require("./../../models/usuario")
+const Usuario = sequelize.define('Usuario', UsuarioModel); */
+

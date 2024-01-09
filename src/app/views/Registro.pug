@@ -1,0 +1,28 @@
+extends layout.pug
+block link
+block titulo
+    title Registrar
+block contenido
+    .mt-5
+        form#formRegistro(action="RegistrarUsuario", method="POST", onsubmit="return validarCuentaregistro()")
+            h2.text-center.mb-4 Registrarse
+            .row.justify-content-center.mx-0
+                .col-4
+                    .mb-4
+                        label(for="nombre") Nombre
+                        input#nombre(type="text", name="nombre",class="form-control" required)
+                    .mb-4
+                        label(for="apellido") Apellido
+                        input#apellido(type="text", name="apellido",class="form-control" required)
+                .col-4
+                    .mb-4
+                        label(for="correo") Correo : (correo@mail.com)
+                        input#correo(type="text", name="correo",class="form-control" required)
+                    .mb-4
+                        label(for="contrasenia") Contraseña: (entre 6 y 10 caracteres)
+                        input#contrasenia(type="password", name="contrasenia",class="form-control" required)
+            .text-center
+                button.btn.btn-primary(type="submit") Registrarse
+            p= resultado
+block scripts
+    script(src="./js/cuenta.js")
