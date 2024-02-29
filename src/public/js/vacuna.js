@@ -22,7 +22,7 @@ function validarFormVacuna() {
 
 		if (campo === "pais") {
 			// Expresión regular que permite letras, espacios y algunos caracteres especiales
-			if (!/^[a-zA-Z]+$/.test(formVacuna[campo].value)) {
+			if (!/^[a-zA-Z\s]+$/.test(formVacuna[campo].value)) {
 				flag = false;
 				campoInvalido(campo);
 			}
