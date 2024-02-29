@@ -368,11 +368,12 @@ const controllerLoteProveedor = {
 									lote.descarteLoteCentroDeVacunacion = lote.descarteLoteCentroDeVacunacion + loteCentro.descarteTotal;
 									if (loteCentro.fechaDeAdquisicion !== null) {
 										cantidadCentroDeVacunacion = cantidadCentroDeVacunacion + loteCentro.totalDisponible;
+										lote.totalAplicadas = loteCentro.totalAplicadas;
 									} else {
 										cantidadEndistribucion = cantidadEndistribucion + loteCentro.totalDisponible;
 									}
-
-									lote.totalAplicadas = loteCentro.totalAplicadas;
+									
+									
 								}
 							});
 						} else {
