@@ -9,7 +9,7 @@ const autenticar = async (req, res, next) => {
   const token = req.cookies.jwt;
   // Verificar si no hay token
   if (!token) {
-    return res.status(401).json({ msg: 'No hay token, autorización denegada' });
+    res.status(500).render("error" , { error: "401", mensaje: "Error al autenticar : "+ error });
    //return res.locals.errorMessage = 'Error interno del servidor';
   }
 
@@ -24,7 +24,7 @@ const autenticar = async (req, res, next) => {
     //console.log("VENGO DEL MIDLLEE",req.usuarioLogeado,decoded);
     next();
   } catch (error) {
-    res.status(401).json({ msg: 'Token no válido' });
+    res.status(500).render("error" , { error: "401", mensaje: "Error al autenticar : "+ error });
   }
 };
 
@@ -33,9 +33,9 @@ const autorizar = (rolesPermitidos) => {
   return (req, res, next) => {
     // Verificar si el usuario tiene el rol necesario
     if (!rolesPermitidos.includes(req.usuarioLogeado.rol)) {
-      return res.status(403).json({ msg: 'No tienes permisos para realizar esta acción' });
+      res.status(500).render("error", { error: "No autorizado", mensaje: "No posee los permisos necesarios ( " + rolesPermitidos.join(", ") + "), su rol: "+ req.usuarioLogeado.rol });
     }
-
+    
     next();
   };
 };

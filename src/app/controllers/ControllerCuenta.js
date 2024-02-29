@@ -1,8 +1,6 @@
 const { usuario } = require("../models/usuario");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-//const cookie = require("cookie");
-
 
 const controllerCuenta = {
 	CargarVistaLogin: async (req, res) => {
@@ -13,11 +11,11 @@ const controllerCuenta = {
 			const usuarios = await usuario.findAll();
 
 			// Pasar los resultados a la vista
-			console.log("Usuarios:", typeof usuarios);
+			//console.log("Usuarios:", typeof usuarios);
 			res.render("Login", { title: "Express", usuarios: usuarios });
 		} catch (error) {
-			console.error("Error al consultar la base de datos:", error);
-			res.status(500).send("Error interno del servidor");
+			//console.error("Error al consultar la base de datos:", error);
+			res.status(500).render("error" , { error: "500", mensaje: "Error al consultar la base de datos : "+ error });
 		}
 	},
 
@@ -25,14 +23,14 @@ const controllerCuenta = {
 		try {
 			res.render("Registro");
 		} catch (error) {
-			res.status(500).send("Error interno del servidor");
+			res.status(500).render("error" , { error: "404", mensaje: "Error al cargar la vista : "+ error });
 		}
 	},
 
 	RegistrarUsuario: async (req, res) => {
 		const datosRegistro = req.body;
 
-		console.log("DATOS RECIBIDOS: ", datosRegistro);
+		//console.log("DATOS RECIBIDOS: ", datosRegistro);
 
 		const flag = true;
 
@@ -60,12 +58,23 @@ const controllerCuenta = {
 			flag = false;
 		}
 
+		const MensajeToast = {
+			estado: true,
+			estilo: "",
+			titulo: "",
+			body: "",
+		};
+
 		if (flag) {
 			try {
 				//revisar si el usuario ya existe
 				const usuarioExistente = await usuario.findOne({ where: { correo: datosRegistro.correo } });
 				if (usuarioExistente) {
-					res.render("Registro", { resultado: "usuario ya existe" });
+					MensajeToast.estilo = "bg-danger";
+					MensajeToast.titulo = "Error, usuario ya existe";
+					MensajeToast.body = "El usuario que intente registrar ya existe";
+
+					res.render("Registro", { MensajeToast: MensajeToast });
 				} else {
 					//hashear la contrasenia
 					const contraseniaHasheada = await bcryptjs.hash(datosRegistro.contrasenia, 10);
@@ -78,20 +87,32 @@ const controllerCuenta = {
 						contrasenia: contraseniaHasheada,
 						rol: "Sin rol",
 					});
-
-					res.render("Login", { registroExitoso: true });
+					MensajeToast.estilo = "bg-success";
+					MensajeToast.titulo = "Exito, usuario creado";
+					MensajeToast.body = "El nuevo usuario ha sido creado exitosamente";
+					res.render("Login", { MensajeToast: MensajeToast });
 				}
 			} catch (error) {
-				res.render("Registro", { resultado: error });
+				MensajeToast.estilo = "bg-danger";
+				MensajeToast.titulo = "Error al registrar";
+				MensajeToast.body = "Error :" + error;
+				res.render("Registro", { MensajeToast: MensajeToast });
 			}
 		} else {
-			res.render("Registro", { resultado: "Error en el registro" });
+			MensajeToast.estilo = "bg-danger";
+			MensajeToast.titulo = "Error al registrar";
+			MensajeToast.body = "Problemas al procesar el formulario";
+			res.render("Registro", { MensajeToast: MensajeToast });
 		}
 	},
 
 	LogearUsuario: async (req, res) => {
-		const body = req.body;
-
+		const MensajeToast = {
+			estado: true,
+			estilo: "",
+			titulo: "",
+			body: "",
+		};
 		//console.log(body.correo);
 		//////////////////
 		const datosLogeo = req.body;
@@ -99,23 +120,34 @@ const controllerCuenta = {
 		const userLogin = await usuario.findOne({ where: { correo: datosLogeo.correo } });
 
 		if (userLogin == null) {
-			res.render("Login", { resultado: "Usuario no encontrado" });
+			MensajeToast.estilo = "bg-warning";
+			MensajeToast.titulo = "Error";
+			MensajeToast.body = "Las credenciales son incorrectas";
+			res.render("Login", { MensajeToast: MensajeToast });
 		} else {
 			let pass = await bcryptjs.compare(datosLogeo.contrasenia, userLogin.contrasenia);
 
 			if (pass) {
 				//generar token
-				
+
 				const token = jwt.sign({ id: userLogin.id }, "SegmentationFault", { expiresIn: "10h" });
 
 				//  res.render("index", { token: token });
 				//const usuarios = await usuario.findAll();
 
 				res.cookie("jwt", token);
-				//res.render("gestionCuentas", { usuarios: usuarios , usuarioLogeado: userLogin.correo, usuariorol: userLogin.rol });
-				res.redirect("gestionCuentas");
+				//res.render("GestionCuentas", { usuarios: usuarios , usuarioLogeado: userLogin.correo, usuariorol: userLogin.rol });
+
+				MensajeToast.estilo = "bg-success";
+				MensajeToast.titulo = "Logueado";
+				MensajeToast.body = "Bienvenido " + userLogin.apellido + " " + userLogin.nombre;
+
+				res.redirect("GestionCuentas");
 			} else {
-				res.render("Login", { resultado: "Usuario incorrecto" });
+				MensajeToast.estilo = "bg-warning";
+				MensajeToast.titulo = "Error";
+				MensajeToast.body = "Las credenciales son incorrectas";
+				res.render("Login", { MensajeToast: MensajeToast });
 			}
 		}
 		//////////////////////
@@ -123,14 +155,13 @@ const controllerCuenta = {
 
 	CargarVistaGestionCuentas: async (req, res) => {
 		try {
-				const usuarios = await usuario.findAll();
-		//	const usuarioLogeado = await usuario.findOne({ where: { correo: req.usuarioLogeado } });
+			const usuarios = await usuario.findAll();
+			//	const usuarioLogeado = await usuario.findOne({ where: { correo: req.usuarioLogeado } });
 			const usuarioLogeado = req.usuarioLogeado;
-				res.render("gestionCuentas", { usuarios: usuarios, usuarioLogeado: usuarioLogeado.correo, usuariorol: usuarioLogeado.rol });
-				
-			} catch (error) {
-			console.error("Error al cargar la vista de gestión de cuentas:", error);
-			res.status(500).send("Error interno del servidor");
+			res.render("GestionCuentas", { usuarios: usuarios, usuarioLogeado: usuarioLogeado.correo, usuariorol: usuarioLogeado.rol });
+		} catch (error) {
+			//console.error("Error al cargar la vista de gestión de cuentas:", error);
+			res.status(500).render("error" , { error: "500", mensaje: "Error al cargar la vista de gestión de cuentas : "+ error });
 		}
 	},
 
@@ -139,21 +170,20 @@ const controllerCuenta = {
 			res.clearCookie("jwt");
 			res.redirect("Login");
 		} catch (error) {
-			console.error("Error al cerrar la sesión:", error);
-			res.status(500).send("Error interno del servidor");
+			//console.error("Error al cerrar la sesión:", error);
+			res.status(500).render("error" , { error: "500", mensaje: "Error al cerrar la sesión : "+ error });
 		}
 	},
 
-
 	CambiarRol: async (req, res) => {
 		//console.log(body,req.usuarioLogeado);
-		console.log("entro a cambiar rol");
+		//console.log("entro a cambiar rol");
 		const body = req.body;
 
 		const usuarioActualizar = await usuario.findByPk(body.userId);
 
 		if (!usuarioActualizar) {
-		return res.status(404).json({ error: 'Usuario no encontrado' });
+			return res.status(500).render("error" , { error: "500", mensaje: "No se pudo encontrar el usuario : "+ error });
 		}
 
 		// Actualizar el rol
@@ -161,11 +191,10 @@ const controllerCuenta = {
 
 		// Guardar los cambios en la base de datos
 		await usuarioActualizar.save();
-	//	const usuarios = await usuario.findAll();
-		//res.render("gestionCuentas", { usuarios: usuarios, usuarioLogeado: req.usuarioLogeado.correo, usuariorol: req.usuarioLogeado.rol });
-		res.redirect("gestionCuentas");
-	}
-
+		//	const usuarios = await usuario.findAll();
+		//res.render("GestionCuentas", { usuarios: usuarios, usuarioLogeado: req.usuarioLogeado.correo, usuariorol: req.usuarioLogeado.rol });
+		res.redirect("GestionCuentas");
+	},
 };
 
 module.exports = controllerCuenta;

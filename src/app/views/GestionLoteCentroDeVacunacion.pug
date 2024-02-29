@@ -1,0 +1,356 @@
+extends layout.pug
+block link
+block titulo
+    title Gestion de Lotes de Centros de Vacunación
+block contenido
+    script.
+        var LotesCentrosDeVacunacion = !{JSON.stringify(LotesCentrosDeVacunacion)};
+        var Vacunas = !{JSON.stringify(Vacunas)}
+        var Ubicaciones = !{JSON.stringify(Ubicaciones)}
+        var centrosDeVacunacion = !{JSON.stringify(centrosDeVacunacion)}
+
+
+
+
+            
+    
+
+    h2.text-center.my-2 Gestion de Lotes de Centros de Vacunación
+    .row.justify-content-center.mx-auto
+        .col-7.shadow.p-3.m-4.text-center
+        
+            
+            form#formfiltro.d-flex.flex-column(action="LotesCentrosDeVacunacionFiltro?_method=GET" method="POST", onsubmit="return validarFormFiltro()")
+                
+                .row.mb-2
+                        .col
+                            h3 Lotes disponibles para vacunar
+                .row.flex-nowrap.align-items-center
+                
+                
+                    .col.ms-5.form-floating
+                        
+                        select#provinciafiltro.form-select.form-select-lg(aria-label='.form-select-lg', name="provinciafiltro")
+                            option(selected, value="") - Todo -
+                            - var ubicacionesAgregadas = new Set();
+                            each Ubicacion in Ubicaciones
+                                if (!ubicacionesAgregadas.has(Ubicacion.provincia.nombre))
+                                    option(value=Ubicacion.provincia.nombre)= Ubicacion.provincia.nombre
+                                        - ubicacionesAgregadas.add(Ubicacion.provincia.nombre)
+                                        
+                        label(for="provinciafiltro") Provincia 
+                    .col.ms-5.form-floating
+                    
+                        select#vacunafiltro.form-select.form-select-lg(aria-label='.form-select-lg', name="vacunafiltro" )
+                            option(selected, value="") - Todo -
+                            - var vacunasAgregadas = new Set();
+                            each Vacuna in Vacunas
+                                if (!vacunasAgregadas.has(Vacuna.tipoDeVacuna))
+                                    option(value=Vacuna.tipoDeVacuna)= Vacuna.tipoDeVacuna
+                                        - vacunasAgregadas.add(Vacuna.tipoDeVacuna)
+                        label(for="vacunafiltro") Tipo de vacuna 
+                    .col-2.me-1.form-floating
+                        button.btn.btn-primary.btn-xl(type="submit") filtrar
+
+    .row.mx-4
+            
+            .col
+                .shadow.rounded.px-3.py-1
+                    table.table.table-striped.table-hover
+                        thead
+                            tr.align-middle
+                                th(scope="col") Identificador LoteProveedor
+                                th(scope="col") identificador loteProvincial
+                                th(scope="col") identificador lote centro de vacunacion
+                                th(scope="col") nombre centro de vacunacion
+                                th(scope="col") ubicacion del centro de vacunacion
+                                th(scope="col") vacuna
+                                th(scope="col") cantidad de vacunas 
+                                th(scope="col") cantidad de vacunas disponibles
+                                th(scope="col") fecha de adquisicion
+                                th(scope="col") fecha de vencimiento
+                                th(scope="col") estado del lote
+                                th(scope="col") Acciones
+                                //button.ms-3.btn.btn-success(type="button", data-bs-toggle="modal", data-bs-target="#modalVacuna") añadir vacuna
+                        tbody
+                            each LoteCentrosDeVacunacion in LotesCentrosDeVacunacion
+                                tr                                
+                                    td= LoteCentrosDeVacunacion.loteprovincial.idLoteProveedor
+                                    td= LoteCentrosDeVacunacion.loteprovincial.id
+                                    td= LoteCentrosDeVacunacion.id
+                                    td= LoteCentrosDeVacunacion.centrodevacunacion.nombre
+                                    td= LoteCentrosDeVacunacion.centrodevacunacion.ciudad.provincia.nombre + " - " + LoteCentrosDeVacunacion.centrodevacunacion.ciudad.nombre + " - " + LoteCentrosDeVacunacion.centrodevacunacion.direccion
+                                    td= LoteCentrosDeVacunacion.loteprovincial.loteproveedor.vacuna.tipoDeVacuna + " (" + LoteCentrosDeVacunacion.loteprovincial.loteproveedor.vacuna.nombreComercial + ")"
+                                    td= LoteCentrosDeVacunacion.cantidadDeVacunas
+                                    if LoteCentrosDeVacunacion.fechaDeAdquisicion === null
+                                        td 0
+                                    else
+                                        td= LoteCentrosDeVacunacion.totalDisponible
+
+                                        
+                                    
+
+                                  
+                                    td
+                                        if LoteCentrosDeVacunacion.fechaDeAdquisicion === null
+                                            p.text-danger= "Viajando"
+                                        else
+                                            p= LoteCentrosDeVacunacion.fechaDeAdquisicion
+
+                                    td= LoteCentrosDeVacunacion.loteprovincial.loteproveedor.fechaDeVencimiento
+                                     
+                                    - const fechaActual = new Date();
+                                    - const fechaVencimiento = new Date(LoteCentrosDeVacunacion.loteprovincial.loteproveedor.fechaDeVencimiento);
+                            
+                                    if fechaVencimiento < fechaActual
+                                        td Lote vencido
+                                    else
+                                        td lote no vencido
+
+                                    td                            
+                                        button.ms-3.btn.btn-primary(type="button", class="btn-editar", data-loteId=LoteCentrosDeVacunacion.id, data-depositoCentroDeVacunacionId=LoteCentrosDeVacunacion.centrodevacunacion.id, data-bs-toggle="modal", data-bs-target="#modaleditardistribuir") Editar
+                                        if LoteCentrosDeVacunacion.fechaDeAdquisicion !== null
+                                            button.ms-3.btn.btn-success(type="button", class="btn-distribuir", data-loteId=LoteCentrosDeVacunacion.id, data-depositoCentroDeVacunacionId=LoteCentrosDeVacunacion.centrodevacunacion.id, data-bs-toggle="modal", data-bs-target="#modaleditardistribuir") Reasignar
+                                            button.ms-3.btn.btn-warning(type="button", class="btn-aplicar", data-lote-id=LoteCentrosDeVacunacion.id, data-idCentroDeVacunacion=LoteCentrosDeVacunacion.centrodevacunacion.id, data-bs-toggle="modal", data-bs-target="#modallote") Aplicar
+                                            button.ms-3.btn.btn-danger(type="button", class="btn-descartar", data-lote-id=LoteCentrosDeVacunacion.id, data-bs-toggle="modal", data-bs-target="#modaldescarte") descartar
+
+
+
+    .modal.fade#modaleditardistribuir(data-bs-backdrop="static", data-bs-keyboard="false", tabindex="-1", aria-labelledby="staticBackdropLabel", aria-hidden="true")
+        .modal-dialog.modal-lg
+            .modal-content
+                .modal-header
+                    .modal-title#staticBackdropLabel
+                        h5#titulomodal titulo
+                    button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+                .modal-body
+                    form#formloteEditarReasignar(action="" method="POST", onsubmit="return validarFormLote('reasignar')")
+                       
+                        //    input#idLoteProveedor(type="hidden", name="idLoteProveedor", value="")                    
+                        
+                        .row
+                            
+                            .col           
+                                h5 Centro de vacunacion    
+                                .form-floating.mb-3
+                                    
+                                    
+                                    select#deposito.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="deposito", required)
+                                        option( value="") - Seleccione -
+                                        - var depositoAgregados = new Set();
+                                        
+                                        each centroDeVacunacion in centrosDeVacunacion
+                                        
+                                            if (!depositoAgregados.has(centroDeVacunacion.nombre))
+                                                option(value= centroDeVacunacion.id)= centroDeVacunacion.nombre + " - " + centroDeVacunacion.ciudad.provincia.nombre
+                                                - depositoAgregados.add(centroDeVacunacion.nombre)
+                                    label(for="deposito") Centro de vacunacion 
+        
+                                //input#idVacuna(type="hidden", name="idVacuna")
+                                
+                                hr
+                                h5 Lote provincial
+                                .form-floating.mb-3
+                                    select#loteprovincial.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="loteprovincial", required)
+                                        option( value="") - Seleccione -
+                                        - var depositosAgregadoslotes = new Set();
+                                        each loteprovincial in lotesProvinciales
+                                            if (!depositosAgregadoslotes.has(loteprovincial.id))
+                                                option(value= loteprovincial.id)= "Identificador : " + loteprovincial.id + " - " + loteprovincial.loteproveedor.vacuna.tipoDeVacuna + " ( " + loteprovincial.loteproveedor.vacuna.nombreComercial + " )"
+                                                - depositosAgregadoslotes.add(loteprovincial.id)
+                                    label(for="loteprovincial") Lote provincial      
+                                
+                                .form-floating.mb-3
+                                    input#cantidad.form-control(type="number", name="cantidad")
+                                    label(for="cantidad") Cantidad De vacunas
+                                .form-floating.mb-3
+                                    input#cantidadDisponible.form-control(type="number", name="cantidadDisponible", readonly)
+                                    label(for="cantidadDisponible") Cantidad De vacunas disponibles
+                                .form-floating.mb-3
+                                    input#fechaadquisicion.form-control(type="date", name="fechaadquisicion", max=`${new Date().toISOString().split('T')[0]}`, required)
+                                    label(for="fechaadquisicion") Fecha de adquisicion
+
+                            #datosenvio.col.oculto(name="datosenvio")
+
+                                input#idloteprovincial(type="hidden", name="idloteprovincial", value="")       
+                                input#idlotecentrosalida(type="hidden", name="idlotecentrosalida", value="")
+
+                                h5 Enviar a:
+                                .form-floating.mb-3
+                                    select#depositoreasignado.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="depositoreasignado", required)
+                                        option( value="") - Seleccione -
+                                        - var depositoAgregados = new Set();
+                                        
+                                        each centroDeVacunacion in centrosDeVacunacion
+                                        
+                                            if (!depositoAgregados.has(centroDeVacunacion.nombre))
+                                                option(value= centroDeVacunacion.id)= centroDeVacunacion.nombre + " - " + centroDeVacunacion.ciudad.provincia.nombre
+                                                - depositoAgregados.add(centroDeVacunacion.nombre)
+                                    label(for="depositoreasignado") Centro de vacunacion destino
+                                .form-floating.mb-3
+                                    input#cantidadvacunas.form-control(type="number", name="cantidadvacunas", required)
+                                    label(for="cantidadvacunas") Cantidad de vacunas 
+                    
+
+                        .modal-footer
+                            button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+                            button.btn.btn-primary(type="submit") Aceptar
+
+
+    .modal.fade#modallote(data-bs-backdrop="static", data-bs-keyboard="false", tabindex="-1", aria-labelledby="staticBackdropLabel", aria-hidden="true")
+        .modal-dialog.modal-xl
+            .modal-content
+                .modal-header
+                    h5.modal-title#staticBackdropLabel Formulario para la aplicación de vacuna
+                    button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+                .modal-body
+                    form#formlote(action="" method="POST", onsubmit="return validarFormLote()")
+                        //input#idLoteProveedor(type="hidden", name="idLoteProveedor", value="")
+                        input#idLoteProveedor(type="hidden", name="idLoteProveedor", value="")
+                        input#idLoteCentroDeVacunacion(type="hidden", name="idLoteCentroDeVacunacion", value="")
+                        input#idCentroDeVacunacion(type="hidden", name="idCentroDeVacunacion", value="")
+                        input#fechaDeVencimiento(type="hidden", name="fechaDeVencimiento", value="")
+                        
+                        
+                        .row
+                            .col-8
+                                h5 paciente
+                            .col
+                                h5 enfermero
+                        
+                        .row
+                            
+                            .col             
+                                              
+                                .form-floating.mb-3
+                                    input#nombrePaciente.form-control(type="text", name="nombrePaciente", required)
+                                    label(for="nombrePaciente") Nombre
+                                .form-floating.mb-3
+                                    input#apellidoPaciente.form-control(type="text", name="apellidoPaciente", required)
+                                    label(for="apellidoPaciente") Apellido
+                                .form-floating.mb-3
+                                    input#DNIPaciente.form-control(type="number", name="DNIPaciente", required)
+                                    label(for="DNIPaciente") DNI
+                                .form-floating.mb-3
+                                    input#correoPaciente.form-control(type="email", name="correoPaciente", required)
+                                    label(for="correoPaciente") Correo
+                                .form-floating.mb-3
+                                    //input#provinciaPaciente.form-control(type="text", name="provinciaPaciente", list="ShowDataListprovincia", required)
+                                        label(for="provinciaPaciente") provincia
+                                        datalist#ShowDataListprovincia
+                                            each ubicacion in Ubicaciones
+                                                option(value= ubicacion.provincia).
+
+                                    select#provinciaPaciente.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="provinciaPaciente", required)
+                                        option(selected, value="") - Seleccione -   
+                                        - var ubicacionesagregadas = new Set();                                   
+                                        each ubicacion in Ubicaciones 
+                                            if (!ubicacionesagregadas.has(ubicacion.provincia.nombre))                                         
+                                                option(value= ubicacion.provincia.id)= ubicacion.provincia.nombre
+                                                - ubicacionesagregadas.add(ubicacion.provincia.nombre)
+                                               
+                                    label(for="provinciaPaciente") Provincia del paciente
+                                .form-floating.mb-3
+                                    input#ciudadPaciente.form-control(type="text", name="ciudadPaciente", list="ShowDataListciudad", required)
+                                    label(for="ciudadPaciente") ciudad
+                                    datalist#ShowDataListciudad
+                                        each ubicacion in Ubicaciones
+                                            option(value= ubicacion.nombre).
+                            .col
+                                
+                                .form-floating.mb-3
+                                    input#fechaDeNacimientoPaciente.form-control(type="date", name="fechaDeNacimientoPaciente", required)
+                                    label(for="fechaDeNacimientoPaciente") Fecha de nacimiento
+                                .form-floating.mb-3
+                                    input#telefonoPaciente.form-control(type="number", name="telefonoPaciente", required)
+                                    label(for="telefonoPaciente") Teléfono                                
+                                .form-floating.mb-3
+                                    select#generoPaciente.form-select.form-select-lg(aria-label='.form-select-lg', name="generoPaciente" )
+                                        option(selected, value="-") -                                   
+                                        option(value="masculino") Masculino
+                                        option(value="femenino") Femenino
+                                    label(for="generoPaciente") Genero
+                                .form-floating.mb-3
+                                    input#fechaDeAplicacion.form-control(type="date", name="fechaDeAplicacion", required)
+                                    label(for="fechaDeAplicacion") Fecha de aplicación
+                                
+                            .col
+                                
+                                .form-floating.mb-3
+                                    //un select para elegir un efermero que ya este cargado en la base de datos
+                                    select#idEnfermero.form-select.form-select-lg(aria-label='.form-select-lg', name="idEnfermero")
+                                        option(selected, value="") -
+                                       
+                                        each Enfermero in Enfermeros
+                                            
+                                                option(value=Enfermero.id)= Enfermero.persona.nombre+" "+ Enfermero.persona.apellido + " - Matricula :  " + Enfermero.matricula
+                                                    
+                                    label(for="idEnfermero") Enfermero 
+                                    
+                                .form-floating.mb-3
+                                    input#nombreEnfermero.form-control(type="text", name="nombreEnfermero", required)
+                                    label(for="nombreEnfermero") Nombre
+                                .form-floating.mb-3
+                                    input#apellidoEnfermero.form-control(type="text", name="apellidoEnfermero", required)
+                                    label(for="apellidoEnfermero") Apellido
+                                .form-floating.mb-3
+                                    input#DNIEnfermero.form-control(type="number", name="DNIEnfermero", required)
+                                    label(for="DNIEnfermero") DNI
+                                .form-floating.mb-3
+                                    input#correoEnfermero.form-control(type="text", name="correoEnfermero", required)
+                                    label(for="correoEnfermero") Correo
+                                .form-floating.mb-3
+                                    input#matriculaEnfermero.form-control(type="text", name="matriculaEnfermero", required)
+                                    label(for="matriculaEnfermero") Matricula
+                                
+                                
+                            
+                                              
+                            
+
+                        .modal-footer
+                            button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+                            button#btnAceptar.btn(type="submit") Aceptar
+
+
+    .modal.fade#modaldescarte(data-bs-backdrop="static", data-bs-keyboard="false", tabindex="-1", aria-labelledby="staticBackdropLabelDescarte", aria-hidden="true")
+        .modal-dialog.modal-xl
+            .modal-content
+                .modal-header
+                    h5.modal-title#staticBackdropLabelDescarte Formulario de descarte
+                    button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+                .modal-body
+                    form#formlotedescarte(action="DescartarLote" method="POST", onsubmit="return validarFormLote()")
+                        input#LoteADescartarId(type="hidden", name="LoteADescartarId", value="")
+                        input#TipoDeLote(type="hidden", name="TipoDeLote", value="LoteCentroDeVacunacion")
+                        .row       
+                            h5 Datos del lote :                       
+                            .col             
+                                ul#InfoLoteDescarte
+
+                                hr
+                                p Usuario que realiza el descarte : #{usuarioLogeado}
+                                
+                                p Fecha de descarte: #{new Date().toISOString().split('T')[0]}
+                                    
+                            .col
+                                
+                                .form-floating.mb-3
+                                    textarea#formadescarte.form-control(name="formadescarte", style="height: 100px", required)
+                                    label(for="formadescarte") Forma de descarte
+                                .form-floating.mb-3
+                                    textarea#motivodescarte.form-control(name="motivodescarte", style="height: 100px", required)
+                                    label(for="motivodescarte") Motivo de descarte
+                                .form-floating.mb-3
+                                    input#cantidadadescartar.form-control(type="number", name="cantidadadescartar", required)
+                                    label(for="cantidadadescartar") Cantidad de vacunas 
+
+                        .modal-footer
+                            button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+                            button.btn.btn-primary(type="submit") Aceptar
+
+
+    
+
+block scripts
+    script(src="./js/lotecentrodevacunacion.js")

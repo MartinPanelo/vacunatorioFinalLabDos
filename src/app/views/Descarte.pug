@@ -1,0 +1,61 @@
+extends layout.pug
+block link
+block titulo
+    title Informe Descarte
+block contenido
+    script.
+           // var lotesConDescarte = !{JSON.stringify(lotesConDescarte)};
+
+    
+    h2.text-center.my-3 Manejo de descarte
+
+    .row.mx-4
+        .col-8.shadow.rounded.px-3.py-1.row.d-flex.justify-content-center.mx-auto.mb-5
+        
+            
+                .col.mx-3.form-floating
+                    a.btn.btn-primary.btn-lg(href="/InformeVacunasDescartadasLoteProveedor")
+                        |Lotes Nacionales
+                    
+                    
+                .col.mx-3.form-floating
+                    a.btn.btn-primary.btn-lg(href="/InformeVacunasDescartadasLoteProvincial")
+                        |Lotes Provinciales
+                
+                    
+                .col.mx-3.form-floating
+                    a.btn.btn-primary.btn-lg(href="/InformeVacunasDescartadasLoteCentroDeVacunacion")
+                        |Lotes Centros de vacunacion
+        .col
+            .shadow.rounded.px-3.py-1
+                h2.text-center.my-3= TituloLotes
+                table.table.table-striped.table-hover
+                    thead
+                        tr.align-middle
+                            th(scope="col") Identificador de lote
+                            th(scope="col") Usuario que realizar el descarte
+                            th(scope="col") forma de descarte
+                            th(scope="col") motivo
+                            th(scope="col") cantidad
+                            th(scope="col") Deposito
+                            th(scope="col") Vacuna
+                            th(scope="col") laboratorio
+                            th(scope="col") fecha de descarte
+                            //    th(scope="col") fecha de fabricacion
+                                th(scope="col") fecha de vencimiento
+                                th(scope="col") fecha de compra
+                    tbody
+                        //each loteConDescarte in lotesConDescarte
+                            tr                                
+                                td= loteConDescarte.id
+                                td= loteConDescarte.descarte.usuario.correo + " ( " + loteConDescarte.descarte.usuario.rol + " ) "
+                                td= loteConDescarte.descarte.formaDeDescarte
+                                td= loteConDescarte.descarte.motivo
+                                td= loteConDescarte.descarte.cantidad
+                                td= loteConDescarte.deposito.nombre + " ( " + loteConDescarte.deposito.direccion + " ) "
+                                td= loteConDescarte.vacuna.tipoDeVacuna+ " ( " + loteConDescarte.vacuna.nombreComercial + " ) "
+                                td= loteConDescarte.vacuna.laboratorio.nombre
+                                td= loteConDescarte.descarte.fechaDeDescarte
+                                //    td= loteConDescarte.dataValues.fechaDeFabricacion
+                                    td= loteConDescarte.dataValues.fechaDeVencimiento
+                                    td= loteConDescarte.dataValues.fechaDeComprac

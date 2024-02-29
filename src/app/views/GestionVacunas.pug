@@ -1,0 +1,110 @@
+extends layout.pug
+block link
+block titulo
+    title Gestion de vacunas
+block contenido
+    
+    h2.text-center.my-3 Gestion de vacunas
+    .row.mx-4
+        .col
+            .shadows.px-3.py-1
+                table.table.table-striped.table-hover
+                    thead
+                        tr.align-middle
+                            th(scope="col") Tipo 
+                            th(scope="col") Nombre comercial
+                            th(scope="col") Pais de origen
+                            th(scope="col") Laboratorio
+                            th(scope="col") Correo de laboratorio
+                            th(scope="col") Direccion de laboratorio
+                            if usuariorol == "admin" || usuariorol == "nacion"
+                                th(scope="col") Acciones
+                                    button.ms-3.btn.btn-success(type="button", data-bs-toggle="modal", data-bs-target="#modalVacuna") añadir vacuna
+                    tbody
+                        each vacuna in vacunas
+                            tr                                
+                                td= vacuna.tipoDeVacuna
+                                td= vacuna.nombreComercial
+                                td= vacuna.paisDeOrigen
+                                td= vacuna.laboratorio.nombre
+                                td= vacuna.laboratorio.correo
+                                td= vacuna.laboratorio.direccion
+                                if usuariorol == "admin" || usuariorol == "nacion"
+                                    td
+                                        button.ms-3.btn.btn-primary(type="button", class="btn-editar", data-vacuna-id=vacuna.id, data-bs-toggle="modal", data-bs-target="#modalVacuna") Editar
+                                        button.ms-3.btn.btn-warning(type="button", class="btn-comprar", data-vacuna-id=vacuna.id, data-bs-toggle="modal", data-bs-target="#modalVacuna") comprar
+
+    .modal.fade#modalVacuna(data-bs-backdrop="static", data-bs-keyboard="false", tabindex="-1", aria-labelledby="staticBackdropLabel", aria-hidden="true")
+        .modal-dialog.modal-lg
+            .modal-content
+                .modal-header
+                    h5.modal-title#staticBackdropLabel Agregar vacuna
+                    button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+                .modal-body
+                    form#formVacuna(action="EditarVacuna/" method="POST", onsubmit="return validarFormVacuna()")
+                        <h5>Vacuna</h5>
+                        .row
+                            .col
+                        
+                                .form-floating.mb-3
+                                    input#tipo.form-control(type="text", name="tipo", list="ShowDataListvacuna",required)
+                                    label(for="tipo") Tipo de vacuna
+                                    datalist#ShowDataListvacuna
+                                        each vacuna in vacunas
+                                            option(value= vacuna.tipoDeVacuna).                            
+                                .form-floating.mb-3
+                                    input#nombreVacuna.form-control(type="text", name="nombreVacuna", required)
+                                    label(for="nombreVacuna") Nombre comercial
+                                .form-floating.mb-3
+                                    input#pais.form-control(type="text", name="pais", required)
+                                    label(for="pais") Pais de origen
+                                <hr>
+                                <h5>Laboratorio</h5>
+                                .form-floating.mb-3
+                                    input#nombreLaboratorio.form-control(type="text", name="nombreLaboratorio", list="ShowDataListlaboratorio", required)
+                                    label(for="nombreLaboratorio") Nombre
+                                    datalist#ShowDataListlaboratorio
+                                        each vacuna in vacunas
+                                            option(value= vacuna.laboratorio.nombre).
+                                .form-floating.mb-3
+                                    input#correo.form-control(type="text", name="correo", required)
+                                    label(for="correo") Correo
+                                .form-floating.mb-3
+                                    input#direccion.form-control(type="text", name="direccion", required)
+                                    label(for="direccion") Direccion
+                            #comprar.col
+                                input#idVacuna(type="hidden", name="idVacuna")
+                                .form-floating.mb-3
+                                    input#cantidad.form-control(type="number", name="cantidad", min="1", required)
+                                    label(for="cantidad") Cantidad de vacunas
+                                .form-floating.mb-3
+                                    input#fechaDeFabricacion.form-control(type="date", name="fechaDeFabricacion", required)
+                                    label(for="fechaDeFabricacion") Fecha de fabricación del lote
+                                .form-floating.mb-3
+                                    input#fechaDeVencimiento.form-control(type="date", name="fechaDeVencimiento", required)
+                                    label(for="fechaDeVencimiento") Fecha de vencimiento del lote                      
+                                .form-floating.mb-3
+                                    script.
+                                        var Depositos = !{JSON.stringify(DepositosNacionales)};
+                                    select#selectDeposito.form-select.form-select-lg.mb-3(aria-label='.form-select-lg',onchange="detalleDeposito()", name="idDeposito", required)
+                                        option(selected, value="") - Seleccione -
+                                        each DepositosNacional in DepositosNacionales
+                                            option(value= DepositosNacional.id)= DepositosNacional.nombre + " - " +  DepositosNacional.ciudad.provincia.nombre + " - " + DepositosNacional.ciudad.nombre
+                                    label(for="selectDeposito") Deposito nacional
+                                #detallesDeposito.oculto
+                                    p
+                                        strong Nombre:  
+                                        span#nombreDeposito
+                                    p 
+                                        strong Dirección:
+                                        span#direccionDeposito
+                                    p
+                                        strong Correo:      
+                                        span#correoDeposito
+                        .modal-footer
+                            button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+                            button.btn.btn-primary(type="submit") Aceptar
+
+
+block scripts
+    script(src="./js/vacuna.js")

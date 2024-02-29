@@ -7,6 +7,12 @@ const {sequelize, DataTypes} = require("../conexion"); // Importa la instancia d
 exports.usuario = sequelize.define(
 	"usuario",
 	{
+		id: {
+			type: DataTypes.INTEGER,
+			primaryKey: true,
+			autoIncrement: true,
+			allowNull: false,
+		},
 		nombre: {
 			type: DataTypes.STRING,
 			allowNull: false,

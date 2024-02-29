@@ -29,8 +29,11 @@ fs.readdirSync(rutasPath).forEach((file) => {
 });
 
 router.use((req, res, next) => {
-  res.status(404).render("error");
+  res.status(404).redirect("/home");
+  //res.status(404).render("error", { error: "404", mensaje: "Página no encontrada" });
 });
-
+router.use((req, res, next) => { // erorr de servidor
+  res.status(500).render("error" , { error: "500", mensaje: "Error interno del servidor" });
+});
 // Exportar el enrutador
 module.exports = router;

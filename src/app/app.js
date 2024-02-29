@@ -1,7 +1,13 @@
 const express = require('express');
-const app = express();
+const methodOverride = require('method-override')
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const app = express();
+
+
+// override with POST having ?_method=DELETE
+app.use(methodOverride('_method'))
+
 
 // Configuración de body-parser
 app.use(bodyParser.json()); // Para analizar solicitudes con formato JSON
@@ -9,6 +15,10 @@ app.use(bodyParser.urlencoded({ extended: true })); // Para analizar solicitudes
 
 
 app.use(cookieParser());
+
+
+
+
 
 
 const path = require('path');

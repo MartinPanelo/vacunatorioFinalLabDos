@@ -1,0 +1,244 @@
+extends layout.pug
+block link
+block titulo
+    title Gestion de LotesProveedor
+block contenido
+    script.
+        var vacunas = !{JSON.stringify(vacunas)};
+        var depositoNacionales = !{JSON.stringify(depositoNacionales)};
+        var lotesProveedores = !{JSON.stringify(lotesProveedores)};
+        var loteProvinciales = !{JSON.stringify(loteProvinciales)};
+        var depositoProvinciales = !{JSON.stringify(depositoProvinciales)};
+
+
+
+
+
+    h2.text-center.my-3 Gestion de Lotes Nacionales LotesProveedor
+    
+    .row.justify-content-center.mx-auto
+        .col-8.shadows.p-3.m-4.text-center
+            form#formfiltro.d-flex.flex-column(action="/LotesProveedoresFiltro?_method=GET" method="POST", onsubmit="return validarFormFiltro()")
+
+        
+                .row.mb-4
+                        .col
+                            h3 Lotes comprados por rango de fecha
+                .row.flex-nowrap.align-items-center
+            
+
+                    .col.mx-4.form-floating
+                        
+                        select#laboratorioid.form-select.form-select-lg(aria-label='.form-select-lg', name="laboratorioid", required)
+                            option(selected, value="") - Seleccione -
+                            - var laboratoriosAgregados = new Set();
+                            each vacuna in vacunas
+                                if (!laboratoriosAgregados.has(vacuna.laboratorio.nombre))
+                                    option(value= vacuna.laboratorio.nombre)= vacuna.laboratorio.nombre
+                                        - laboratoriosAgregados.add(vacuna.laboratorio.nombre)
+                        label(for="laboratorioid") Laboratorio
+                    .col.mx-4.form-floating
+                    
+                        input#fechadesde.form-control(type="date", name="fechadesde", required)
+                        label(for="fechadesde") Fecha desde
+                    .col.mx-4.form-floating
+                        
+                        input#fechahasta.form-control(type="date", name="fechahasta", required)
+                        label(for="fechahasta") Fecha hasta
+                    .col-auto.mx-4.form-floating
+                        button.btn.btn-primary(type="submit") filtrar
+                        
+                        
+                
+    .row.mx-4
+        
+        .col
+            .shadows.px-3.py-1
+                table.table.table-striped.table-hover
+                    thead
+                        tr.align-middle
+                            th(scope="col") Identificador LoteProveedor
+                            th(scope="col") nombre deposito nacional
+                            th(scope="col") ubicacion del deposito
+                            th(scope="col") vacuna
+                            th(scope="col") laboratorio
+                            th(scope="col") cantidad de vacunas compradas
+                            th(scope="col") cantidad de vacunas disponibles
+                            th(scope="col") fecha de fabricacion
+                            th(scope="col") fecha de vencimiento
+                            th(scope="col") fecha de compra
+                            th(scope="col") fecha de adquisicion
+                            th(scope="col") Acciones
+                               //button.ms-3.btn.btn-success(type="button", data-bs-toggle="modal", data-bs-target="#modalVacuna") añadir vacuna
+                    tbody
+                        each loteProveedor in lotesProveedores
+                            tr                                
+                                td= loteProveedor.id
+                                td= loteProveedor.depositonacional.nombre
+                                td= loteProveedor.depositonacional.ciudad.provincia.nombre + ", " + loteProveedor.depositonacional.ciudad.nombre
+                                td= loteProveedor.vacuna.tipoDeVacuna + " (" + loteProveedor.vacuna.nombreComercial + ")" 
+                                td= loteProveedor.vacuna.laboratorio.nombre
+                                td= loteProveedor.cantidadDeVacunas
+                                if loteProveedor.fechaDeAdquisicion === null
+                                    td 0
+                                else 
+                                    td= loteProveedor.totalDisponible                                
+                                td= loteProveedor.fechaDeFabricacion
+                                td= loteProveedor.fechaDeVencimiento
+                                td= loteProveedor.fechaDeCompra
+                                td
+                                    if loteProveedor.fechaDeAdquisicion === null
+                                        p.text-danger= "Viajando"
+                                    else
+                                        p= loteProveedor.fechaDeAdquisicion
+                                    
+                                
+
+                                td
+                                
+                                    
+                                    button.ms-3.btn.btn-primary(type="button", class="btn-editar", data-lote-id=loteProveedor.id, data-bs-toggle="modal", data-bs-target="#modallote") Editar
+                                    if loteProveedor.fechaDeAdquisicion !== null
+                                        button.ms-3.btn.btn-success(type="button", class="btn-distribuir", data-lote-id=loteProveedor.id, data-bs-toggle="modal", data-bs-target="#modallote") Distribuir
+                                        button.ms-3.btn.btn-warning(type="button", class="btn-descartar", data-lote-id=loteProveedor.id, data-bs-toggle="modal", data-bs-target="#modaldescarte") descartar
+
+
+
+
+
+
+    .modal.fade#modaldescarte(data-bs-backdrop="static", data-bs-keyboard="false", tabindex="-1", aria-labelledby="staticBackdropLabelDescarte", aria-hidden="true")
+        .modal-dialog.modal-xl
+            .modal-content
+                .modal-header
+                    h5.modal-title#staticBackdropLabelDescarte Formulario de descarte
+                    button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+                .modal-body
+                    form#formlotedescarte(action="DescartarLote" method="POST", onsubmit="return validarFormLote(true)")
+                        input#LoteADescartarId(type="hidden", name="LoteADescartarId", value="")
+                        input#TipoDeLote(type="hidden", name="TipoDeLote", value="LoteProveedor")
+                        .row       
+                            h5 Datos del lote :                       
+                            .col             
+                                ul#InfoLoteDescarte
+
+                                hr
+                                p Usuario que realiza el descarte : #{usuarioLogeado}
+                                
+                                p Fecha de descarte: #{new Date().toISOString().split('T')[0]}
+                                    
+                            .col
+                                
+                                .form-floating.mb-3
+                                    textarea#formadescarte.form-control(name="formadescarte", style="height: 100px", required)
+                                    label(for="formadescarte") Forma de descarte
+                                .form-floating.mb-3
+                                    textarea#motivodescarte.form-control(name="motivodescarte", style="height: 100px", required)
+                                    label(for="motivodescarte") Motivo de descarte
+                                .form-floating.mb-3
+                                    input#cantidadadescartar.form-control(type="number", name="cantidadadescartar", min="1", required)
+                                    label(for="cantidadadescartar") Cantidad de vacunas 
+
+                        .modal-footer
+                            button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+                            button.btn.btn-primary(type="submit") Aceptar
+
+
+    .modal.fade#modallote(data-bs-backdrop="static", data-bs-keyboard="false", tabindex="-1", aria-labelledby="staticBackdropLabel", aria-hidden="true")
+        #tamanioModal.modal-dialog
+            .modal-content
+                .modal-header
+                    h5.modal-title#staticBackdropLabel Editar lote
+                    button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+                .modal-body
+                    form#formlote(action="" method="POST", onsubmit="return validarFormLote()")
+                        input#idLoteProveedor(type="hidden", name="idLoteProveedor", value="")
+                        .row
+                            
+                            .col             
+                                h5 Vacuna              
+                                .form-floating.mb-3
+                                    
+
+                                    select#laboratorio.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="laboratorio", required)
+                                        option(selected, value="") - Seleccione -
+                                        - var laboratoriosAgregados = new Set();
+                                        each vacuna in vacunas
+                                            if (!laboratoriosAgregados.has(vacuna.laboratorio.nombre))
+                                                option(value= vacuna.laboratorio.nombre)= vacuna.laboratorio.nombre
+                                                - laboratoriosAgregados.add(vacuna.laboratorio.nombre)
+                                    label(for="laboratorio") Laboratorio         
+                                .form-floating.mb-3
+                                    select#vacunaid.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="vacunaid", required)
+
+                                    label(for="vacunaid") vacuna
+                                .form-floating.mb-3
+                                    input#cantidad.form-control(type="number", name="cantidad", min="1", required)
+                                    label(for="cantidad") Cantidad de vacunas compradas
+                                .form-floating.mb-3
+                                    input#disponibles.form-control(type="number", name="disponibles", disabled)
+                                    label(for="disponibles") Cantidad de vacunas disponibles
+                                hr
+                                h5 Deposito nacional
+                                //input#idVacuna(type="hidden", name="idVacuna")
+                                .form-floating.mb-3
+                                    select#provinciadeposito.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="provinciadeposito", required)
+                                        option(selected, value="") - Seleccione -
+                                        - var ubicacionesagregadas = new Set();
+                                        each deposito in depositoNacionales
+                                            if (!ubicacionesagregadas.has(deposito.ciudad.provincia.nombre))
+                                                option(value= deposito.ciudad.provincia.nombre)= deposito.ciudad.provincia.nombre
+                                                - ubicacionesagregadas.add(deposito.ciudad.provincia.nombre)
+                                    label(for="provinciadeposito") Provincia del deposito
+                                .form-floating.mb-3
+                                    input#ciudad(type="hidden", name="ciudad", value="")
+                                    select#depositonacionalnombre.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="depositonacionalnombre", required)
+
+                                    label(for="depositonacionalnombre")  deposito nacional
+
+                                
+                            .col
+                                h5 Fechas
+                                .form-floating.mb-3
+                                    input#fechafabricacion.form-control(type="date", name="fechafabricacion", required)
+                                    label(for="fechafabricacion") Fecha de fabricacion
+                                .form-floating.mb-3
+                                    input#fechavencimiento.form-control(type="date", name="fechavencimiento", required)
+                                    label(for="fechavencimiento") Fecha de vencimiento                                
+                                .form-floating.mb-3
+                                    input#fechacompra.form-control(type="date", name="fechacompra", required)
+                                    label(for="fechacompra") Fecha de compra
+                                .form-floating.mb-3
+                                    input#fechaadquisicion.form-control(type="date", name="fechaadquisicion")
+                                    label(for="fechaadquisicion") Fecha de adquisicion
+                                              
+                            #datosenvio.col.oculto(style="display: none")
+                                
+                                h5 Deposito provincial:
+                                .form-floating.mb-3
+                                    select#provincia.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="provincia", required)
+                                        option(selected, value="") - Seleccione -
+                                        - var ubicacionesagregadas = new Set();
+                                        each deposito in depositoProvinciales
+                                            if (!ubicacionesagregadas.has(deposito.ciudad.provincia.nombre))
+                                                option(value= deposito.ciudad.provincia.nombre)= deposito.ciudad.provincia.nombre
+                                                - ubicacionesagregadas.add(deposito.ciudad.provincia.nombre)
+                                    label(for="provincia") Provincia del deposito
+                                .form-floating.mb-3
+                                    input#ciudad(type="hidden", name="ciudad", value="")
+                                    select#depositoprovincialid.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="depositoprovincialid", required)
+
+                                    label(for="depositoprovincialid")  deposito provincial
+                            
+                                hr
+                                .form-floating.mb-3
+                                    input#cantidadvacunas.form-control(type="number", name="cantidadvacunas", min="1", required)
+                                    label(for="cantidadvacunas") Cantidad de vacunas 
+
+                        .modal-footer
+                            button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+                            button.btn.btn-primary(type="submit") Aceptar
+
+
+block scripts
+    script(src="./js/loteproveedor.js")

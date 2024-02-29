@@ -1,0 +1,119 @@
+extends layout.pug
+block link
+block titulo
+    title Informe Personas vacunadas
+block contenido
+    script.
+            var personasVacunadas = !{JSON.stringify(personasVacunadas)};
+
+    
+    h2.text-center.my-3 Informe de personas vacunadas
+
+    
+    .row.d-flex.justify-content-center.mx-auto
+        
+            
+            form#formfiltro.col-10.shadows.p-3.m-4.d-flex.align-items-center(action="/informePersonasVacunadas?_method=GET" method="POST", onsubmit="return validarFormFiltro()")
+                .col.mx-4.form-floating
+
+                    select#vacunaid.form-select.form-select-lg(aria-label='.form-select-lg', name="vacunaid", required)
+                            option(selected, value="") - Seleccione -
+                            - var vacunasAgregadas = new Set();
+                            each personaVacunada in personasVacunadas
+                                if (!vacunasAgregadas.has(personaVacunada.loteproveedor.vacuna.id))
+                                    option(value= personaVacunada.loteproveedor.vacuna.id)= personaVacunada.loteproveedor.vacuna.tipoDeVacuna
+                                        - vacunasAgregadas.add(personaVacunada.loteproveedor.vacuna.id)
+                    label(for="vacunaid") Tipo de vacuna
+                    
+
+                .col.mx-4.form-floating
+                
+                    select#provincia.form-select.form-select-lg(aria-label='.form-select-lg', name="provincia", required)
+                            option(selected, value="") - Seleccione -
+                            - var provinciasAgregadas = new Set();
+                            each personaVacunada in personasVacunadas
+                                if (!provinciasAgregadas.has(personaVacunada.paciente.ciudad.provincia.nombre))
+                                    option(value= personaVacunada.paciente.ciudad.provincia.id)= personaVacunada.paciente.ciudad.provincia.nombre
+                                        - provinciasAgregadas.add(personaVacunada.paciente.ciudad.provincia.nombre)
+                    label(for="provincia") Provincia
+                .col.mx-4.form-floating
+                    
+                    select#ciudad.form-select.form-select-lg(aria-label='.form-select-lg', name="ciudad", required)
+                        option(selected, value="") - Seleccione -
+                    label(for="ciudad") ciudad
+
+                .col.mx-4.form-floating
+                    
+                    select#centrodevacunacionid.form-select.form-select-lg(aria-label='.form-select-lg', name="centrodevacunacionid", required)
+                            option(selected, value="") - Seleccione -
+                            - var centroDeVacunacionAgregadas = new Set();
+                            each personaVacunada in personasVacunadas
+                                if (!centroDeVacunacionAgregadas.has(personaVacunada.centrodevacunacion.id))
+                                    option(value= personaVacunada.centrodevacunacion.id)= personaVacunada.centrodevacunacion.nombre + " - " + personaVacunada.centrodevacunacion.direccion
+                                        - centroDeVacunacionAgregadas.add(personaVacunada.centrodevacunacion.id)
+                    label(for="centrodevacunacionid") centro de vacunacion
+                
+                .col.mx-4.form-floating
+
+                    .form-check
+                        input.form-check-input.my-0#aplicacionvencidas(type='checkbox', name="aplicacionvencidas")
+                        label.form-check-label(for='aplicacionvencidas')
+                            | Solo aplicaciones vencidas
+
+                .col-auto.form-floating
+
+                    button.btn.btn-primary.btn-lg.me-2(type="submit") filtrar
+                    a.btn.btn-success.btn-lg.ms-3(href="/informePersonasVacunadas")
+                        | quitar filtros
+                   
+
+    .row.mx-4
+    
+        .col
+            .shadows.px-3.py-1
+                h2.text-center.my-3= TituloLotes
+                table.table.table-striped.table-hover
+                    thead
+                        tr.align-middle
+                            th(scope="col") Identificador de lote proveedor
+                            th(scope="col") Identificador de lote provincial
+                            th(scope="col") Identificador de lote centros de vacunacion
+                            th(scope="col") centro de vacunacion
+                            th(scope="col") vacuna
+                            th(scope="col") laboratorio
+                            th(scope="col") enfermero
+                            th(scope="col") matricula
+                            th(scope="col") paciente
+                            th(scope="col") DNI
+                            th(scope="col") ubicacion
+                            th(scope="col") fecha de nacimiento
+                            th(scope="col") fecha de vencimiento
+                            th(scope="col") fecha de aplicacion
+                            th(scope="col") aplicacion vencida
+                            //    th(scope="col") fecha de fabricacion
+                                th(scope="col") fecha de vencimiento
+                                th(scope="col") fecha de compra
+                    tbody
+                        each personaVacunadas in personasVacunadas
+                            tr                                
+                                td= personaVacunadas.loteproveedor.id
+                                td= personaVacunadas.lotecentrodevacunacion.loteprovincial.id
+                                td= personaVacunadas.lotecentrodevacunacion.id
+                                td= personaVacunadas.centrodevacunacion.nombre + " - " + personaVacunadas.centrodevacunacion.direccion
+                                td= personaVacunadas.loteproveedor.vacuna.tipoDeVacuna + " ( " + personaVacunadas.loteproveedor.vacuna.nombreComercial + " ) "
+                                td= personaVacunadas.loteproveedor.vacuna.laboratorio.nombre + " ( " + personaVacunadas.loteproveedor.vacuna.laboratorio.correo + " ) "
+                                td= personaVacunadas.enfermero.persona.nombre + " " + personaVacunadas.enfermero.persona.apellido
+                                td= personaVacunadas.enfermero.matricula
+                                td= personaVacunadas.paciente.persona.nombre + " " + personaVacunadas.paciente.persona.apellido
+                                td= personaVacunadas.paciente.persona.DNI
+                                td= personaVacunadas.paciente.ciudad.provincia.nombre + ", " + personaVacunadas.paciente.ciudad.nombre
+                                td= personaVacunadas.paciente.fechaDeNacimiento
+                                td= personaVacunadas.loteproveedor.fechaDeVencimiento 
+                                td= personaVacunadas.fechaDeAplicacion
+                                - if (personaVacunadas.loteproveedor.fechaDeVencimiento <= personaVacunadas.fechaDeAplicacion)
+                                    td La vacuna estaba vencida
+                                - else
+                                    td La vacuna no estaba vencida
+
+block scripts
+    script(src="./js/informePersonasVacunadas.js")

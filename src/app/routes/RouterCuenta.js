@@ -11,7 +11,7 @@ router.get("/Registro"/* , autenticar */, controllerCuenta.CargarVistaRegistro);
 
 router.post("/RegistrarUsuario"/* , autenticar */, controllerCuenta.RegistrarUsuario);
 
-router.get("/gestionCuentas", autenticar, controllerCuenta.CargarVistaGestionCuentas);
+router.get("/GestionCuentas", autenticar, controllerCuenta.CargarVistaGestionCuentas);
 
 router.get("/CerrarSesion", controllerCuenta.CerrarSesion);
 

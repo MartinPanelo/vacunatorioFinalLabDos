@@ -1,9 +1,103 @@
 extends layout.pug
 block link
 block titulo
-	title inicio
+	title Página principal
 block contenido
 	div
-		p los usuarios de la base de datos son :
+		.container
+			.row.justify-content-center.mt-5
+				
+				h1.text-center.mb-4 PROYECTO “Argentina Vacuna”
+				h2.text-center.mb-4 TECNICATURA UNIVERSITARIA EN DESARROLLO WEB
+				h3.text-center.mb-4 LABORATORIO de PROGRAMACIÓN II
+				h4.text-decoration-underline Tiempo de Desarrollo
+				p Para el desarrollo del proyecto, el tiempo estimado es de 7 semanas.
+				p El desarrollo de la aplicación deberá ser realizado en forma individual a excepción de las actividades de definición de requisitos, análisis y diseño del software que podrán ser realizadas en grupo.
+				
+			.row.justify-content-center
+					h4.text-decoration-underline Pautas de presentación
+					.col
+						ul
+							li(style="list-style-type: '> ';") La presentación funcional de la aplicación será individual y será evaluada por los responsables de la cátedra.
+							li(style="list-style-type: '> ';") El desarrollo de la aplicación será individual pudiendo realizar actividades grupales para las actividades previas a la codificación.
+							li(style="list-style-type: '> ';") Se deberán compartir enlace a github del proyecto el cual tendrá los fuentes finales de la aplicación presentada junto con un informe que incluya:
+						ul 
+							li Listado de problemas surgidos durante el desarrollo; y para cada uno, indicar como se solucionó
+							li Aportes que el alumno considere importantes para anexar a la especificación, por ej.: pasos de instalación, aspectos de diseño de las interfaces, etc.
+			.row.justify-content-center
+					h4.text-decoration-underline Recomendaciones
+					.col 
+						ul
+							li Realizar un análisis del dominio de la aplicación y definir el alcance del proyecto.
+							li Evacuar todas las dudas respecto a los requerimientos funcionales en el comienzo del proyecto.
+							li Organizar de forma efectiva los archivos fuentes de la aplicación como así también la claridad del código escrito
 
+			.row.justify-content-center
+					h4.text-decoration-underline Evaluación
+					.col
+						ul
+							li Se considerará la completitud de los requisitos funcionales.
+							li La interfaz desarrollada para que el usuario logre realizar sus actividades.
+							li La validación de los datos tanto en el cliente como en el servidor.
+							li El diseño de la Base de Datos como también la definición de los diferentes mecanismos de restricciones.
+							li El uso de objetos de la BD como SP, Triggers, Funciones, eventos, etc.
+							li La arquitectura y organización de la aplicación (Front-End/Back-End).
+							li Buenas prácticas en general.
+			.row.justify-content-center.mt-5
+				
+				h3.text-center.mb-4.fw-bold Especificación del problema
+				h4.text-center.text-decoration-underline Aplicación web ”Argentina Vacuna”
+			
+			.row-justify-content-center.mt-5
 
+				p El programa de vacunación del Ministerio de salud de la Nación Argentina se encarga de comprar y
+					| gestionar las miles o millones de vacunas que Argentina compra a los diferentes Laboratorios
+					| internacionales para cumplir con el calendario de vacunación obligatorio.
+				p Bajo este contexto, se nos encarga el desarrollo de una aplicación web que permita gestionar la
+					|trazabilidad de cada dosis desde que es adquirida por el Ministerio hasta que es
+					|administrada/aplicada a cada persona.
+				p Cada vacuna adquirida se mantiene en depósitos que tiene el Ministerio de Salud a la espera de
+					|ser distribuidas a alguna de las provincias.
+				p Cada vacuna tiene exactamente una dosis, del cual se conoce su laboratorio, tipo de vacuna (BCG,
+					| Doble Viral, Triple Viral, etc), nombre comercial, país de origen, fecha de fabricación, vencimiento,
+					| fecha de compra y fecha de adquisición (cuando llega al país). Las vacunas vienen embaladas en
+					| cajas de diferentes cantidades identificadas con un número escaneable de lote-proveedor.
+				p Las vacunas son enviadas a las distintas provincias para que ellas sean administradas. Tener en
+					| cuenta que de un mismo lote-proveedor se pueden distribuir distintas cantidades a distintas
+					| provincias. (Esto implica que el sistema debe proveer algún mecanismo para poder discriminar
+					| cada lote distribuido a cada provincia)
+				p Una vez distribuidas a las provincias, un programa de vacunación provincial es el encargado de
+					| almacenarlas, distribuirlas a los centros de vacunación y administrarlas.
+				p El programa provincial controlará el estado de las vacunas, las almacenará en depósito y registrará
+					| la llegada de estas. En caso de existir vacunas que hayan sufrido un percance (roturas, perdidas de
+					| frio, etc) todo el lote recibido será registrado como descartado (indicando un motivo).
+					| Posteriormente cuando deban enviarse al centro de vacunación se registrará la fecha, cantidad de
+					| dosis (por lote) y centro de vacunación al que serán enviadas.
+				p Ya en el centro de vacunación una vez que la vacuna es aplicada al paciente, personal autorizado
+					| registra la siguiente información: Nombre y Apellido, DNI, Fecha de Nacimiento, teléfono, mail,
+					| genero, Localidad, Provincia y fecha de aplicación. Se registra también el centro de vacunación, el
+					| enfermero que aplico la dosis y el lote-proveedor aplicado.
+				p El sistema debe marcar como vencidas todas las vacunas que hayan cumplido su vencimiento y no
+					| hayan sido aplicadas. Además, cuando se intente registrar la aplicación de una vacuna vencida
+					| presentará una “Alerta importante” indicando la situación. Además, el sistema también permitirá
+					| que en cualquier punto se puedan registrar el descarte de una vacuna, o lote ya sea por mal
+					| estado o por vencimiento de esta. (Fecha de descarte, forma de descarte, motivo y persona a
+					| cargo)
+				p El sistema debe permitir al programa provincial registrar la información necesaria para poder
+					| reasignar una partida de vacunas de un centro de vacunación a otro.
+				p El sistema debe poder proveer la información necesaria para que el Ministerio de Salud de la
+					| Nación pueda gestionar, distribuir y realizar las compras necesarias con la mejor eficiencia posible.
+				p Algunos de los reportes que serán necesarios contar son:
+					ul
+						li Cantidad de vacunas compradas a cada laboratorio por rango de fecha.
+						li Listado de lotes-proveedores por tipo de vacuna discriminando cuantas dosis se
+							|encuentran almacenadas en nación, en distribución, almacenadas en provincia, en
+							|centros de vacunación, aplicadas, descartadas y vencidas
+						li Listado de stock disponible para vacunar por tipo de vacuna por provincia (No se
+							|consideran vacunas que estén en depósito de nación ni en distribución)
+						li Listado de personas por provincia, centro de vacunación y tipo de vacunas a las
+							|cuales se aplicó vacuna vencida.
+						li Listado de cantidad de vacunas vencidas (que no hayan sido registradas como
+							|descartadas) sumarizados por lotes-proveedor, provincia y centro de vacunación
+						li Cantidad de personas vacunadas por tipo de vacuna por provincia y localidad.
+				p * Cualquier consideración, requisito no definido o aclaración se debatirá y consensuará en clases.

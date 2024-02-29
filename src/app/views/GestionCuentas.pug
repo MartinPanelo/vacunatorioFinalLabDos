@@ -26,10 +26,13 @@ block contenido
 								td
 									form.d-flex.justify-content-around(action="CambiarRol" method="POST", onsubmit="return true")
 										input(type="hidden" name="userId" value=user.id)
-										select.form-select.w-50(name="RolNuevo")
+										select.form-select.w-50(name="RolNuevo" , disabled=(user.correo === usuarioLogeado))
 											option(value="Sin rol" selected=(user.rol === null)) Sin rol
 											option(value="admin" selected=(user.rol === 'admin')) Administrador
-											option(value="usuario" selected=(user.rol === 'usuario')) Usuario
-										button.btn.btn-primary(type="submit") Actualizar
+											option(value="nacion" selected=(user.rol === 'nacion')) nacion
+											option(value="provincia" selected=(user.rol === 'provincia')) provincia
+											option(value="Centrodevacunacion" selected=(user.rol === 'Centrodevacunacion')) Centro de vacunacion
+										if user.correo !== usuarioLogeado
+											button.btn.btn-primary(type="submit") Actualizar
 
 

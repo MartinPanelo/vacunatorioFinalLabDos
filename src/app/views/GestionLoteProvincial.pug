@@ -1,0 +1,204 @@
+extends layout.pug
+block link
+block titulo
+    title Gestion de Lotes Provinciales
+block contenido
+    script.
+        var LotesProvinciales = !{JSON.stringify(LotesProvinciales)};
+        var centrosDeVacunacion = !{JSON.stringify(centrosDeVacunacion)};
+        var depositosProvinciales = !{JSON.stringify(depositosProvinciales)};
+    h2.text-center.my-3 Gestion de Lotes Provinciales
+    .row.d-flex.justify-content-center.mx-auto
+        
+
+    .row.mx-4
+            
+            .col
+                .shadow.rounded.px-3.py-1
+                    table.table.table-striped.table-hover
+                        thead
+                            tr.align-middle
+                                th(scope="col") Identificador LoteProveedor
+                                th(scope="col") identificador loteProvincial
+                                th(scope="col") nombre deposito Provincial
+                                th(scope="col") ubicacion del deposito
+                                th(scope="col") vacuna
+                                th(scope="col") cantidad de vacunas 
+                                th(scope="col") cantidad de vacunas disponibles
+                                th(scope="col") fecha de fabricacion
+                                th(scope="col") fecha de vencimiento
+                                th(scope="col") fecha de adquisicion
+                                th(scope="col") Acciones
+                                //button.ms-3.btn.btn-success(type="button", data-bs-toggle="modal", data-bs-target="#modalVacuna") añadir vacuna
+                        tbody
+                            each LoteProvincial in LotesProvinciales
+                                
+                                tr                                
+                                    td= LoteProvincial.idLoteProveedor
+                                    td= LoteProvincial.id
+                                    td= LoteProvincial.depositoprovincial.nombre
+                                    td= LoteProvincial.depositoprovincial.ciudad.provincia.nombre + " , " + LoteProvincial.depositoprovincial.ciudad.nombre
+                                    td= LoteProvincial.loteproveedor.vacuna.tipoDeVacuna + " ( " + LoteProvincial.loteproveedor.vacuna.nombreComercial + " )"
+                                    td= LoteProvincial.cantidadDeVacunas
+                                    if LoteProvincial.fechaDeAdquisicion === null
+                                        td 0
+                                    else
+                                        td= LoteProvincial.total
+                                    td= LoteProvincial.loteproveedor.fechaDeFabricacion
+                                    td= LoteProvincial.loteproveedor.fechaDeVencimiento
+                                    td
+                                        if LoteProvincial.fechaDeAdquisicion === null
+                                            p.text-danger= "Viajando"
+                                        else
+                                            p= LoteProvincial.fechaDeAdquisicion
+                                    td.oculto= LoteProvincial.depositoprovincial.id
+                                    td                            
+                                        button.ms-3.btn.btn-primary(type="button", class="btn-editar", data-lote-provincial-id=LoteProvincial.id , data-bs-toggle="modal", data-bs-target="#modallote") Editar
+                                        if LoteProvincial.fechaDeAdquisicion !== null && LoteProvincial.total > 0
+                                            button.ms-3.btn.btn-success(type="button", class="btn-distribuir", data-lote-provincial-id=LoteProvincial.id, data-bs-toggle="modal", data-bs-target="#modallote") Distribuir
+                                            button.ms-3.btn.btn-warning(type="button", class="btn-descartar", data-lote-id=LoteProvincial.id, data-bs-toggle="modal", data-bs-target="#modaldescarte") descartar
+
+    
+    .modal.fade#modaldescarte(data-bs-backdrop="static", data-bs-keyboard="false", tabindex="-1", aria-labelledby="staticBackdropLabelDescarte", aria-hidden="true")
+            .modal-dialog.modal-xl
+                .modal-content
+                    .modal-header
+                        h5.modal-title#staticBackdropLabelDescarte Formulario de descarte
+                        button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+                    .modal-body
+                        form#formlotedescarte(action="DescartarLote" method="POST", onsubmit="return validarFormLote(true)")
+                            input#TipoDeLote(type="hidden", name="TipoDeLote", value="LoteProvincial")
+                            input#LoteADescartarId(type="hidden", name="LoteADescartarId", value="")
+                            .row       
+                                h5 Datos del lote :                       
+                                .col             
+                                    ul#InfoLoteDescarte
+
+                                    hr
+                                    p Usuario que realiza el descarte : #{usuarioLogeado}
+                                    
+                                    p Fecha de descarte: #{new Date().toISOString().split('T')[0]}
+                                        
+                                .col
+                                    
+                                    .form-floating.mb-3
+                                        textarea#formadescarte.form-control(name="formadescarte", style="height: 100px", required)
+                                        label(for="formadescarte") Forma de descarte
+                                    .form-floating.mb-3
+                                        textarea#motivodescarte.form-control(name="motivodescarte", style="height: 100px", required)
+                                        label(for="motivodescarte") Motivo de descarte
+                                    .form-floating.mb-3
+                                        input#cantidadadescartar.form-control(type="number", name="cantidadadescartar", min="1", required)
+                                        label(for="cantidadadescartar") Cantidad de vacunas 
+
+                            .modal-footer
+                                button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+                                button.btn.btn-primary(type="submit") Aceptar
+
+
+
+    .modal.fade#modallote(data-bs-backdrop="static", data-bs-keyboard="false", tabindex="-1", aria-labelledby="staticBackdropLabel", aria-hidden="true")
+        #tamanioModal.modal-dialog.modal-lg
+            .modal-content
+                .modal-header
+                    h5.modal-title#staticBackdropLabel Editar lote
+                    button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+                .modal-body
+                    form#formlote(action="" method="POST", onsubmit="return validarFormLote()")
+                        //input#idLoteProveedor(type="hidden", name="idLoteProveedor", value="")
+                        .row
+                            
+                            .col           
+                                h5 Deposito              
+                                .form-floating.mb-3
+                                    
+                                    
+                                    select#deposito.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="deposito", required)
+                                        option( value="") - Seleccione -
+                                        - var DepositosAgregados = new Set();
+                                        
+                                        each deposito in depositosProvinciales
+                                        
+                                            if (!DepositosAgregados.has(deposito.nombre))
+                                                option(value= deposito.id)= deposito.nombre + " - " + deposito.ciudad.provincia.nombre
+                                                - DepositosAgregados.add(deposito.nombre)
+                                    label(for="deposito") Deposito provincial     
+        
+                                //input#idVacuna(type="hidden", name="idVacuna")
+                                
+                                hr
+                                .form-floating.mb-3
+                                    input#fechaadquisicion.form-control(type="date", name="fechaadquisicion", required)
+                                    label(for="fechaadquisicion") Fecha de adquisicion
+                                hr
+                                .form-floating.mb-3
+                                    input#cantidad.form-control(type="number", min="1", name="cantidad")
+                                    label(for="cantidad") Cantidad De vacunas
+                            .col
+                                h5 Lote proveedor
+                                .form-floating.mb-3
+                                    select#loteproveedor.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="loteproveedor", required)
+                                        option( value="") - Seleccione -
+                                        - var depositosAgregadoslotes = new Set();
+                                        each loteProveedor in lotesProveedores
+                                            if (!depositosAgregadoslotes.has(loteProveedor.id))
+                                                option(value= loteProveedor.id)= loteProveedor.vacuna.tipoDeVacuna + " - " + loteProveedor.vacuna.laboratorio.nombre
+                                                - depositosAgregadoslotes.add(loteProveedor.id)
+                                    label(for="loteproveedor") Lote proveedor      
+                                .oculto(name="datosenvio")
+                                    hr
+                                    h5 lote provincial
+                                    .form-floating.mb-3
+                                        //input#depositoId(type="hidden", name="depositoId")
+
+                                        input#loteprovincial.form-control(type="text", name="loteprovincial")
+                                        label(for="loteprovincial") Identificador de lote provincial
+
+                                #Descarte
+                                    hr
+                                    .form-check
+                                        input.form-check-input.my-0#lotepercance(type='checkbox', name="lotepercance")
+                                        label.form-check-label(for='lotepercance')
+                                            | Descartar total por percance
+                                    #formulariodescarte(style="display: none")                
+                                        .form-floating.mb-3 
+                                            textarea#motivodescarteE.form-control(name="motivodescarte", style="height: 100px",  required, disabled)
+                                            label(for="motivodescarte") Motivo de descarte
+                                        .form-floating.mb-3 
+                                            textarea#formadescarteE.form-control(name="formadescarte", style="height: 100px", required, disabled)
+                                            label(for="formadescarte") forma de descarte
+
+                            #datosenvio.col.oculto(name="datosenvio")(style="display: none")
+                                
+                                h5 Enviar a:
+                                .form-floating.mb-3
+                                    select#provincia.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="provincia", required)
+                                        option(selected, value="") - Seleccione -
+                                        - var ubicacionesagregadas = new Set();
+                                        each centroDeVacunacion in centrosDeVacunacion
+                                            if (!ubicacionesagregadas.has(centroDeVacunacion.ciudad.provincia.nombre))
+                                                option(value= centroDeVacunacion.ciudad.provincia.nombre)= centroDeVacunacion.ciudad.provincia.nombre
+                                                - ubicacionesagregadas.add(centroDeVacunacion.ciudad.provincia.nombre)
+                                    label(for="provincia") Provincia del Centro de vacunación
+                                .form-floating.mb-3
+                                    input#centrodevacunacionId(type="hidden", name="centrodevacunacionId", value="")
+
+                                    select#centrodevacunacion.form-select.form-select-lg.mb-3(aria-label='.form-select-lg', name="centrodevacunacion", readonly )
+
+                                    label(for="centrodevacunacion")  centro de vacunación
+                            
+                                hr
+                                .form-floating.mb-3
+                                    input#cantidadvacunas.form-control(type="number", name="cantidadvacunas", min="1", required)
+                                    label(for="cantidadvacunas") Cantidad de vacunas 
+
+                        .modal-footer
+                            button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+                            button.btn.btn-primary(type="submit") Aceptar
+
+
+
+    
+
+block scripts
+    script(src="./js/loteprovincial.js")

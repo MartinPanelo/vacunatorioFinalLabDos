@@ -1,0 +1,78 @@
+extends layout.pug
+block link
+block titulo
+    title= tipoDeposito
+block contenido
+    h2.text-center.my-3= tipoDeposito
+    .row.mx-4
+        .col
+            .shadows.px-3.py-1
+                table.table.table-striped.table-hover
+                    thead
+                        tr.align-middle
+                            th(scope="col") identificador 
+                            th(scope="col") nombre
+                            th(scope="col") correo
+                            th(scope="col") direccion
+                            th(scope="col") ubicacion
+                            th(scope="col") acciones
+
+                                button.ms-3.btn.btn-success(type="button", data-bs-toggle="modal", data-bs-target="#modalDeposito") añadir 
+                    tbody
+                        each deposito in depositos
+                            tr                                
+                                td= deposito.id
+                                td= deposito.nombre
+                                td= deposito.correo 
+                                td= deposito.direccion
+                                td= deposito.ciudad.provincia.nombre + ", " + deposito.ciudad.nombre
+                                td
+                                    button.ms-3.btn.btn-primary(type="button", class="btn-editar", data-deposito-id=deposito.id, data-bs-toggle="modal", data-bs-target="#modalDeposito") Editar 
+
+
+    .modal.fade#modalDeposito(data-bs-backdrop="static", data-bs-keyboard="false", tabindex="-1", aria-labelledby="staticBackdropLabel", aria-hidden="true")
+        .modal-dialog
+            .modal-content
+                .modal-header
+                    script.
+                        var cartel = "#{cartel}";
+                    h5.modal-title#staticBackdropLabel Anadir
+                    button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+                .modal-body
+                    script.
+                        var rutaActionCliente = "#{rutaAction}";
+                    form#formDeposito(action="/" method="POST", onsubmit="return validarFormDeposito()")              
+                        .form-floating.mb-3
+                            input#nombreDeposito.form-control(type="text", name="nombreDeposito", required)
+                            label(for="nombreDeposito") Nombre                        
+                        .form-floating.mb-3
+                            input#correo.form-control(type="text", name="correo", required)
+                            label(for="correo") Correo
+                        .form-floating.mb-3
+                            input#direccion.form-control(type="text", name="direccion", required)
+                            label(for="direccion") direccion
+                        .form-floating.mb-3
+                            select#provinciaId.form-select.form-select-lg(aria-label='.form-select-lg', name="provinciaId", required)
+                                option(selected, value="") - Seleccione -
+                                - var provinciasAgregadas = new Set();
+                                each ubicacion in ubicaciones
+                                    if (!provinciasAgregadas.has(ubicacion.provincia.nombre))
+                                        option(value= ubicacion.provincia.id)= ubicacion.provincia.nombre
+                                            - provinciasAgregadas.add(ubicacion.provincia.nombre)
+                            label(for="provinciaId") Provincia
+                        .form-floating.mb-3
+                            input#ciudadNombre.form-control(type="text", name="ciudadNombre", list="ShowDataListciudadNombre", required)
+                            label(for="ciudadNombre") ciudad
+                            datalist#ShowDataListciudadNombre
+                                each ubicacion in ubicaciones
+                                    option(value= ubicacion.nombre).                       
+                        .modal-footer
+                            button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Cancelar
+                            button.btn.btn-primary(type="submit") Aceptar
+
+
+    
+
+
+block scripts
+    script(src="./js/deposito.js")

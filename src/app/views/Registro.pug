@@ -4,7 +4,7 @@ block titulo
     title Registrar
 block contenido
     .mt-5
-        form#formRegistro(action="RegistrarUsuario", method="POST", onsubmit="return validarCuentaregistro()")
+        form#formRegistro(action="RegistrarUsuario", method="POST", onsubmit="return ValidarFormulario('formRegistro')")
             h2.text-center.mb-4 Registrarse
             .row.justify-content-center.mx-0
                 .col-4

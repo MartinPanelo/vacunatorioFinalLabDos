@@ -4,7 +4,7 @@ block titulo
     title Iniciar sesión
 block contenido
     
-    form#formLogin.mt-5(action="LogearUsuario", method="POST", onsubmit="return validarLogeo()")
+    form#formLogin.mt-5(action="LogearUsuario", method="POST", onsubmit="return ValidarFormulario('formLogin')")
         h2.text-center.mb-4 Iniciar sesión
         .row.justify-content-center.mx-0
             .col-4
@@ -16,13 +16,6 @@ block contenido
                     input#contrasenia(type="password", name="contrasenia",class="form-control" required)
         .text-center
             button.btn.btn-primary(type="submit") Ingresar
-        if registroExitoso
-            #registroExitosoToast.toast.toast-container.position-fixed.top-50.start-50.translate-middle(role='alert', aria-live='assertive', aria-atomic='true')
-                .toast-header.bg-success
-                    strong.me-auto.text-white Registro Exitoso
-                    button.btn-close(type='button', data-bs-dismiss='toast', aria-label='Close', aria-hidden='true')
-                .toast-body
-                    | &iexcl;Tu registro se ha completado exitosamente!
 
 
 block scripts

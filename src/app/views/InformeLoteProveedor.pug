@@ -1,0 +1,76 @@
+extends layout.pug
+block link
+block titulo
+    title Informe de lote proveedor
+block contenido
+    script.
+        var lotesProveedoresTotal = !{JSON.stringify(lotesProveedoresTotal)};
+    
+    h2.text-center.my-3 Informe de lote proveedor
+
+    .row.d-flex.justify-content-center.mx-auto
+        
+            
+            form#formfiltro.col-5.shadows.p-3.m-4.d-flex.align-items-center(action="/InformeLoteProveedor?_method=GET" method="POST", onsubmit="return validarFormFiltro()")
+                
+                
+                .col.mx-4.form-floating
+
+                    .form-check
+                        input.form-check-input.my-0#lotesVencidos(type='checkbox', name="lotesVencidos")
+                        label.form-check-label(for='lotesVencidos')
+                            | Listar solo lotes vencidos
+
+                .col-auto.form-floating
+
+                    button.btn.btn-primary.btn-lg.me-3(type="submit") filtrar
+                    a.btn.btn-success.btn-lg.me-4(href="/InformeLoteProveedor")
+                        | quitar filtros
+
+
+    .row.mx-4
+        .col
+            .shadows.px-2.py-1
+                table.table.table-striped.table-hover
+                    thead
+                        tr.align-middle
+                            th(scope="col") Id loteProveedor 
+                            th(scope="col") vacuna
+                            th(scope="col") laboratorio
+                            th(scope="col") cantidad de vacunas compradas
+                            th(scope="col") disponibles en nacional
+                            th(scope="col") disponibles en provincial
+                            th(scope="col") disponibles en centros de vacunacion
+                            th(scope="col") en distribucion
+                            th(scope="col") vacunas aplicadas
+                            th(scope="col") vacunas descartadas loteProveedor 
+                            th(scope="col") vacunas descartadas lote provincial
+                            th(scope="col") vacunas descartadas lote centro de vacunacion
+                            th(scope="col") vacunas descartadas totales
+                            th(scope="col") cantidad de vacunas vencidas 
+                            th(scope="col") estado
+                    tbody
+                        each loteProveedor in lotesProveedoresTotal
+                            tr                                
+                                td= loteProveedor.id
+                                td= loteProveedor.vacuna.tipoDeVacuna + " ( " + loteProveedor.vacuna.nombreComercial + " )"
+                                td= loteProveedor.vacuna.laboratorio.nombre
+                                td= loteProveedor.cantidadDeVacunas
+                                td= loteProveedor.totalDisponible
+                                td= loteProveedor.cantidadProvincia
+                                td= loteProveedor.cantidadCentroDeVacunacion
+                                td= loteProveedor.cantidadEndistribucion
+                                td= loteProveedor.totalAplicadas
+                                td= loteProveedor.descarteLoteProveedor
+                                td= loteProveedor.descarteLoteProvincial
+                                td= loteProveedor.descarteLoteCentroDeVacunacion
+                                td= loteProveedor.descarteTotal
+                                td= loteProveedor.totalVencido
+                                
+                                - const fechaActual = new Date();
+                                - const fechaVencimiento = new Date(loteProveedor.fechaDeVencimiento);
+                                
+                                    if fechaVencimiento < fechaActual
+                                       td Lote vencido: #{fechaVencimiento.toISOString().split('T')[0]}
+                                    else
+                                       td lote no vencido: #{fechaVencimiento.toISOString().split('T')[0]}
